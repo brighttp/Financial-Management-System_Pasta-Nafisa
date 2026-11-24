@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { BusinessProvider, useBusiness } from "./contexts/BusinessContext";
+import EmployeeView from "./components/EmployeeView";
 import LoginPage from "./components/LoginPage";
 import AccessDenied from "./components/AccessDenied";
 import Sidebar from "./components/Sidebar";
@@ -430,8 +431,17 @@ function DashboardApp() {
   );
 }
 
+function RoleWorkspace() {
+  const { role, loading, business, error, refreshBusinessData } = useBusiness();
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-secondary">Memuat ruang kerja...</div>;
+  if (error || !business || !["owner", "pegawai"].includes(role)) {
+    return <AccessDenied message={error || "Role akun belum ditetapkan. Hubungi owner untuk mendapatkan akses."} onRetry={refreshBusinessData} />;
+  }
+  return role === "owner" ? <DashboardApp /> : <EmployeeView />;
+}
+
 function MainApp() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   if (authLoading) {
     return (
@@ -451,8 +461,8 @@ function MainApp() {
   }
 
   return (
-    <BusinessProvider>
-      <DashboardApp />
+    <BusinessProvider key={user.id}>
+      <RoleWorkspace />
     </BusinessProvider>
   );
 }

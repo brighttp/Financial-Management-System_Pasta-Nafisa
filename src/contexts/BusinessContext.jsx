@@ -29,7 +29,7 @@ export function BusinessProvider({ children }) {
   // Active filters
   const [selectedOutlet, setSelectedOutlet] = useState('all'); // 'all' or outlet UUID
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadBusinessData = useCallback(async () => {
@@ -50,7 +50,7 @@ export function BusinessProvider({ children }) {
       const { business: biz, membership: mem } = await getUserBusinessContext(user.id);
       setBusiness(biz);
       setMembership(mem);
-      setRole(mem?.role || 'owner');
+      setRole(mem?.role || null);
 
       // 2. Load outlets and categories in parallel for this business
       const [outletsList, categoriesList] = await Promise.all([
@@ -65,6 +65,7 @@ export function BusinessProvider({ children }) {
       setError(err.message || 'Gagal memuat konteks bisnis Pasta Nafisa.');
       setBusiness(null);
       setMembership(null);
+      setRole(null);
     } finally {
       setLoading(false);
     }
@@ -95,6 +96,7 @@ export function BusinessProvider({ children }) {
   }, []);
 
   const addCategory = async ({ name, type }) => {
+    if (role !== "owner") throw new Error("Hanya owner yang dapat mengubah pengaturan.");
     if (!business?.id) throw new Error("Bisnis belum dimuat.");
     const newCat = await createCategory({ businessId: business.id, name, type });
     setCategories((prev) => [...prev, newCat].sort((a, b) => a.name.localeCompare(b.name)));
@@ -103,6 +105,7 @@ export function BusinessProvider({ children }) {
   };
 
   const removeCategory = async (categoryId) => {
+    if (role !== "owner") throw new Error("Hanya owner yang dapat mengubah pengaturan.");
     const targetCat = categories.find((c) => c.id === categoryId);
     const catName = targetCat ? targetCat.name : "Kategori";
     const res = await deleteCategory(categoryId);
@@ -126,6 +129,7 @@ export function BusinessProvider({ children }) {
   });
 
   const addChannel = (newChannelName) => {
+    if (role !== "owner") throw new Error("Hanya owner yang dapat mengubah pengaturan.");
     const trimmed = (newChannelName || "").trim();
     if (!trimmed) throw new Error("Nama kanal tidak boleh kosong.");
     if (channels.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
@@ -143,6 +147,7 @@ export function BusinessProvider({ children }) {
   };
 
   const removeChannel = (channelNameToRemove) => {
+    if (role !== "owner") throw new Error("Hanya owner yang dapat mengubah pengaturan.");
     const updated = channels.filter((c) => c !== channelNameToRemove);
     setChannels(updated);
     try {
@@ -157,6 +162,7 @@ export function BusinessProvider({ children }) {
     business,
     membership,
     role,
+    isOwner: role === "owner",
     outlets,
     categories,
     channels,

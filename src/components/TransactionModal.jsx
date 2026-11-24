@@ -7,6 +7,7 @@ import ConfirmModal from "./ConfirmModal";
 
 export default function TransactionModal({ isOpen, onClose, onSave }) {
   const {
+    isOwner,
     outlets,
     categories,
     selectedOutlet,
@@ -18,7 +19,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
   } = useBusiness();
 
   const [type, setType] = useState("expense"); // "income" or "expense"
-  const [amount, setAmount] = useState("450.000");
+  const [amount, setAmount] = useState("");
   const [date, setDate] = useState(getTodayYMD());
   const [outletId, setOutletId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -653,7 +654,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                           Pilih 1 Kategori
                         </span>
                         {/* Add Category Trigger Button */}
-                        <button
+                        {isOwner && (<button
                           type="button"
                           onClick={() => setIsAddingCategory((prev) => !prev)}
                           className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
@@ -667,7 +668,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                             {isAddingCategory ? "close" : "add"}
                           </span>
                           <span>{isAddingCategory ? "Batal" : "Tambah"}</span>
-                        </button>
+                        </button>)}
                       </div>
 
                       <button
@@ -684,7 +685,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                     </div>
 
                     {/* Inline Add Category Mini-Form */}
-                    {isAddingCategory && (
+                    {isOwner && isAddingCategory && (
                       <div
                         className="p-2.5 rounded-xl bg-surface-container border border-primary/30 space-y-2 animate-in fade-in slide-in-from-top-1 duration-150"
                       >
@@ -728,13 +729,13 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                       {availableCategories.length === 0 ? (
                         <div className="py-6 text-center text-secondary text-xs">
                           <p>Belum ada kategori {type === "income" ? "pemasukan" : "pengeluaran"}.</p>
-                          <button
+                          {isOwner && (<button
                             type="button"
                             onClick={() => setIsAddingCategory(true)}
                             className="text-primary font-bold hover:underline mt-1 inline-block cursor-pointer"
                           >
                             + Tambah Kategori Sekarang
-                          </button>
+                          </button>)}
                         </div>
                       ) : (
                         availableCategories.map((cat) => {
@@ -778,7 +779,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                               </button>
 
                               {/* Delete Category Button */}
-                              <button
+                              {isOwner && (<button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -788,7 +789,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                                 title={`Hapus kategori "${cat.name}"`}
                               >
                                 <span className="material-symbols-outlined text-[15px]">delete</span>
-                              </button>
+                              </button>)}
                             </div>
                           );
                         })
@@ -845,7 +846,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                           Pilih 1 Kanal
                         </span>
                         {/* Add Channel Trigger Button */}
-                        <button
+                        {isOwner && (<button
                           type="button"
                           onClick={() => setIsAddingChannel((prev) => !prev)}
                           className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
@@ -859,7 +860,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                             {isAddingChannel ? "close" : "add"}
                           </span>
                           <span>{isAddingChannel ? "Batal" : "Tambah"}</span>
-                        </button>
+                        </button>)}
                       </div>
 
                       <button
@@ -876,7 +877,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                     </div>
 
                     {/* Inline Add Channel Mini-Form */}
-                    {isAddingChannel && (
+                    {isOwner && isAddingChannel && (
                       <div
                         className="p-2.5 rounded-xl bg-surface-container border border-primary/30 space-y-2 animate-in fade-in slide-in-from-top-1 duration-150"
                       >
@@ -920,13 +921,13 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                       {channels.length === 0 ? (
                         <div className="py-6 text-center text-secondary text-xs">
                           <p>Belum ada kanal transaksi.</p>
-                          <button
+                          {isOwner && (<button
                             type="button"
                             onClick={() => setIsAddingChannel(true)}
                             className="text-primary font-bold hover:underline mt-1 inline-block cursor-pointer"
                           >
                             + Tambah Kanal Sekarang
-                          </button>
+                          </button>)}
                         </div>
                       ) : (
                         channels.map((ch) => {
@@ -965,7 +966,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                               </button>
 
                               {/* Delete Channel Button */}
-                              <button
+                              {isOwner && (<button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -975,7 +976,7 @@ export default function TransactionModal({ isOpen, onClose, onSave }) {
                                 title={`Hapus kanal "${ch}"`}
                               >
                                 <span className="material-symbols-outlined text-[15px]">delete</span>
-                              </button>
+                              </button>)}
                             </div>
                           );
                         })

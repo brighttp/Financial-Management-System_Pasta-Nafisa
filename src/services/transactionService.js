@@ -207,7 +207,7 @@ export async function getTransactionById(id) {
  * @param {Object} params
  * @returns {Promise<Object>}
  */
-export async function createTransaction(params) {
+export async function createTransaction(params, { returnRecord = true } = {}) {
   const businessId = params.businessId || params.business_id;
   const userId = params.userId || params.created_by;
   const outletId = params.outletId || params.outlet_id;
@@ -260,30 +260,12 @@ export async function createTransaction(params) {
     created_by: userId,
   };
 
-  // Perform insert with join or fallback to basic insert
-  let data = null;
-  const result = await supabase
-    .from('financial_transactions')
-    .insert([insertData])
-    .select('*, outlets(id, name), transaction_categories(id, name, type)')
-    .single();
-
-  if (result.error) {
-    console.warn('Insert with join failed, retrying clean insert:', result.error.message);
-    const fallback = await supabase
-      .from('financial_transactions')
-      .insert([insertData])
-      .select('*')
-      .single();
-
-    if (fallback.error) {
-      console.error('Error inserting transaction:', fallback.error);
-      throw new Error(`Gagal menyimpan transaksi ke database: ${fallback.error.message}`);
-    }
-    data = fallback.data;
-  } else {
-    data = result.data;
-  }
+  // Employees insert without SELECT because they cannot read the ledger.
+  let query = supabase.from('financial_transactions').insert([insertData]);
+  if (returnRecord) query = query.select('*, outlets(id, name), transaction_categories(id, name, type)').single();
+  const { data, error } = await query;
+  if (error) throw new Error(`Gagal menyimpan transaksi: ${error.message}`);
+  if (!returnRecord) return null;
 
   return normalizeTransaction(data);
 }
@@ -352,3 +334,20 @@ export async function deleteTransaction(id) {
   return true;
 }
 
+
+// The RLS policy independently enforces ownership and today's WIB boundaries.
+export async function getEmployeeHistory({ businessId, userId, start, end, page = 0 }) {
+  if (!businessId || !userId) throw new Error('Sesi tidak aktif.');
+  const { data, error, count } = await supabase
+    .from('financial_transactions')
+    .select('id, type, amount, created_at, transaction_date, payment_method, outlets(name), transaction_categories(name)', { count: 'exact' })
+    .eq('business_id', businessId)
+    .eq('created_by', userId)
+    .gte('created_at', start)
+    .lt('created_at', end)
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(page * 20, page * 20 + 19);
+  if (error) throw new Error('Riwayat belum bisa dimuat. Coba lagi.');
+  return { rows: data || [], count: count || 0 };
+}

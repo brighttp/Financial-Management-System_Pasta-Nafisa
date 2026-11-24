@@ -16,8 +16,7 @@ export default function AccessDenied({ message, onRetry }) {
             Akses Bisnis Ditolak
           </h2>
           <p className="text-xs sm:text-body-sm text-secondary mt-1">
-            Akun Anda terverifikasi ({user?.email}), namun belum terhubung dengan unit usaha Pasta Nafisa di tabel{' '}
-            <code className="text-primary font-mono text-xs">business_members</code>.
+            Akses untuk akun {user?.email} belum tersedia. Hubungi owner untuk memeriksa keanggotaan dan role akun Anda.
           </p>
         </div>
 

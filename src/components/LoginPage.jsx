@@ -86,7 +86,7 @@ export default function LoginPage() {
               Masuk Akun Pengelola
             </h2>
             <p className="text-xs sm:text-body-sm text-secondary mt-0.5">
-              Masukkan kredensial akun Owner / Staf Keuangan resmi Pasta Nafisa.
+              Masukkan kredensial akun Owner / Pegawai resmi Pasta Nafisa.
             </p>
           </div>
 
